@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "jest",
-    "build": "rimraf lib && tsc"
+    "build": "rimraf lib dist && tsc && ncc build dist/main.js -o lib --source-map --license licenses.txt"
   },
   "husky": {
     "hooks": {}
@@ -23,6 +23,7 @@
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0",
     "@octokit/rest": "^16.0.0",
+    "@vercel/ncc": "^0.32.0",
     "actions-toolkit": "^2.1.0",
     "husky": "^4.3.0",
     "lodash": "^4.17.21",
