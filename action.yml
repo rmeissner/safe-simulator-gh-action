@@ -15,4 +15,4 @@ inputs:
     default: "master"
 runs:
   using: "node16"
-  main: "lib/main.js"
+  main: "lib/index.js"
