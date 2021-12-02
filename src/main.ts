@@ -63,7 +63,9 @@ async function run(): Promise<void> {
       console.log({ safeInfo })
       const options: Ganache.IProviderOptions = { db_path: "/", fork: nodeUrl, gasLimit: 100000000, gasPrice: "0" }
       const execute = executor(Ganache.provider(options))
-      for (const owner in safeInfo.owners) {
+      console.log("Owners", safeInfo.owners)
+      for (const owner of safeInfo.owners) {
+        console.log("Process", owner)
         console.log("Unlock", owner, await execute("evm_unlockUnknownAccount", [owner]))
         console.log("Transaction", owner, await execute("eth_sendTransaction", [{
           to: safeAddress,
