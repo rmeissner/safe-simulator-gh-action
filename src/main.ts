@@ -5,7 +5,8 @@ async function run(): Promise<void> {
   try {
     const safe: string = core.getInput('safe-address')
 
-    console.log('safe', safe)
+    core.notice('safe:' + safe)
+    console.log('log safe', safe)
     core.setOutput('safe', safe)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
