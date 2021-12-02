@@ -34,7 +34,7 @@ interface SafeInfo {
 
 const safeInterface = new ethers.utils.Interface([
   "function approveHash(bytes32) returns (bytes32)",
-  "function execTransaction(address to, uint256 value, bytes calldata data, Enum.Operation operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address payable refundReceiver, bytes calldata signatures) returns (bool)"
+  "function execTransaction(address to, uint256 value, bytes calldata data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address payable refundReceiver, bytes calldata signatures) returns (bool)"
 ])
 
 const executor = (nodeUrl: string) => {
