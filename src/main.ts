@@ -26,6 +26,13 @@ interface SafeInfo {
 
 const safeInterface = new ethers.utils.Interface(["function approveHash(bytes32)"])
 
+const executor = (provider: Ganache.Provider) => {
+  return async (method: string, params: any[]): Promise<JsonRpcResponse | undefined> => {
+      const execute = promisify(provider.send.bind(provider))
+      return (await execute({ jsonrpc: "2.0", method, params }))?.result
+  }
+}
+
 async function run(): Promise<void> {
   try {
     const safeAddress: string = core.getInput('safe-address')
@@ -54,8 +61,7 @@ async function run(): Promise<void> {
       const safeInfo = response.data
       console.log({ safeInfo })
       const options: Ganache.IProviderOptions = { db_path: "/", fork: nodeUrl, gasLimit: 100000000, gasPrice: "0" }
-      const provider = Ganache.provider(options)
-      const execute = promisify(provider.send.bind(provider))
+      const execute = executor(Ganache.provider(options))
       for (const owner in safeInfo.owners) {
         await execute("evm_unlockUnknownAccount", [owner])
         console.log(await execute("eth_sendTransaction", [{
