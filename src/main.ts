@@ -29,10 +29,15 @@ const safeInterface = new ethers.utils.Interface(["function approveHash(bytes32)
 const executor = (provider: Ganache.Provider) => {
   const execute = promisify(provider.send.bind(provider))
   return async (method: string, params: any[]): Promise<JsonRpcResponse | undefined> => {
-      console.log("JSON RPC", method, params)
+    console.log("JSON RPC", method, params)
+    try {
       const response = await execute({ jsonrpc: "2.0", method, params })
-      console.log({response})
+      console.log({ response })
       return response?.result
+    } catch (e) {
+      console.log(e)
+    }
+    return undefined
   }
 }
 
@@ -66,6 +71,7 @@ async function run(): Promise<void> {
       const options: Ganache.IProviderOptions = { db_path: "/", fork: nodeUrl, gasLimit: 100000000, gasPrice: "0" }
       const execute = executor(Ganache.provider(options))
       console.log("Owners", safeInfo.owners)
+      console.log("Client", await execute("web3_clientVersion", []))
       for (const owner of safeInfo.owners) {
         console.log("Process", owner)
         console.log("Unlock", owner, await execute("evm_unlockUnknownAccount", [owner]))
