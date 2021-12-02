@@ -1,4 +1,5 @@
 import Ganache, { JsonRpcPayload, JsonRpcResponse } from "ganache-core"
+import memdown from "memdown"
 import promisify from "util.promisify"
 import * as core from '@actions/core'
 import { getMultiSendDeployment, getMultiSendCallOnlyDeployment, getCreateCallDeployment, getSignMessageLibDeployment } from '@gnosis.pm/safe-deployments'
@@ -26,7 +27,10 @@ interface SafeInfo {
 
 const safeInterface = new ethers.utils.Interface(["function approveHash(bytes32)"])
 
-const executor = (provider: Ganache.Provider) => {
+const executor = (nodeUrl: string) => {
+  const db: any = memdown()
+  const options: any = { db, db_path: "/", fork: nodeUrl, gasLimit: 100000000, gasPrice: "0" }
+  const provider = Ganache.provider(options)
   const execute = promisify(provider.send.bind(provider))
   return async (method: string, params: any[]): Promise<JsonRpcResponse | undefined> => {
     console.log("JSON RPC", method, params)
@@ -68,8 +72,7 @@ async function run(): Promise<void> {
       const response: AxiosResponse<SafeInfo> = await axios.get(`${serviceUrl}/api/v1/safes/${safeAddress}`)
       const safeInfo = response.data
       console.log({ safeInfo })
-      const options: Ganache.IProviderOptions = { db_path: "/", fork: nodeUrl, gasLimit: 100000000, gasPrice: "0" }
-      const execute = executor(Ganache.provider(options))
+      const execute = executor(nodeUrl)
       console.log("Owners", safeInfo.owners)
       console.log("Client", await execute("web3_clientVersion", []))
       for (const owner of safeInfo.owners) {
