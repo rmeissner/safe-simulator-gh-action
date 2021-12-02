@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@octokit/types": "5.0.1",
+    "@types/memdown": "^3.0.0",
     "@types/node": "^16.11.11",
     "@types/util.promisify": "^1.0.4",
     "rimraf": "^3.0.2",

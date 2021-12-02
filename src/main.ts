@@ -18,14 +18,24 @@ interface MultisigTransaction {
   to: string,
   value: string,
   data: string,
-  operation: number
+  operation: number,
+  safeTxGas: string,
+  baseGas: string,
+  gasPrice: string,
+  gasToken: string,
+  refundReceiver: string,
+  nonce: number
 }
 
 interface SafeInfo {
-  owners: string[]
+  owners: string[],
+  nonce: number
 }
 
-const safeInterface = new ethers.utils.Interface(["function approveHash(bytes32)"])
+const safeInterface = new ethers.utils.Interface([
+  "function approveHash(bytes32) returns bytes32",
+  "function execTransaction(address to, uint256 value, bytes calldata data, Enum.Operation operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address payable refundReceiver, bytes calldata signatures) returns bool"
+])
 
 const executor = (nodeUrl: string) => {
   const db: any = memdown()
@@ -35,7 +45,7 @@ const executor = (nodeUrl: string) => {
   return async (method: string, params: any[]): Promise<JsonRpcResponse | undefined> => {
     console.log("JSON RPC", method, params)
     try {
-      const response = await execute({ jsonrpc: "2.0", method, params })
+      const response = await execute({ jsonrpc: "2.0", id: Math.random().toString(35), method, params })
       console.log({ response })
       return response?.result
     } catch (e) {
@@ -51,9 +61,13 @@ async function run(): Promise<void> {
     const serviceUrl: string = core.getInput('service-url')
     const safeTxHash: string = core.getInput('safe-tx-hash')
     const nodeUrl: string = core.getInput('node-url')
-    const response: AxiosResponse<MultisigTransaction> = await axios.get(`${serviceUrl}/api/v1/multisig-transactions/${safeTxHash}`)
-    const transaction = response.data
-    console.log({ transaction })
+    const infoResponse: AxiosResponse<SafeInfo> = await axios.get(`${serviceUrl}/api/v1/safes/${safeAddress}`)
+    const safeInfo = infoResponse.data
+    console.log("Safe Information", safeInfo)
+
+    const txResponse: AxiosResponse<MultisigTransaction> = await axios.get(`${serviceUrl}/api/v1/multisig-transactions/${safeTxHash}`)
+    const transaction = txResponse.data
+    console.log("Transaction Information", transaction)
 
     if (transaction.to.toLowerCase() === safeAddress.toLowerCase()) {
       core.warning("Transaction target Safe itself")
@@ -66,26 +80,49 @@ async function run(): Promise<void> {
       }
       core.warning("Transaction performs a delegate call")
     }
-
     const simulateTx: string = core.getInput('simulate-tx')
-    if (simulateTx == "true") {
-      const response: AxiosResponse<SafeInfo> = await axios.get(`${serviceUrl}/api/v1/safes/${safeAddress}`)
-      const safeInfo = response.data
-      console.log({ safeInfo })
+    if (simulateTx === "true" && safeInfo.nonce === transaction.nonce) {
+      console.log("Simulate Transaction")
       const execute = executor(nodeUrl)
-      console.log("Owners", safeInfo.owners)
       console.log("Client", await execute("web3_clientVersion", []))
       for (const owner of safeInfo.owners) {
-        console.log("Process", owner)
-        console.log("Unlock", owner, await execute("evm_unlockUnknownAccount", [owner]))
-        console.log("Transaction", owner, await execute("eth_sendTransaction", [{
+        console.log("Prepare", owner)
+        await execute("evm_unlockUnknownAccount", [owner])
+        await execute("eth_sendTransaction", [{
           to: safeAddress,
           data: safeInterface.encodeFunctionData("approveHash", [transaction.safeTxHash]),
           from: owner,
           gasPrice: 0,
           gasLimit: 10000000
-        }]))
+        }])
       }
+      const signatures = "0x" + safeInfo.owners
+        .map(owner => owner.toLowerCase())
+        .sort()
+        .map((owner) => `000000000000000000000000${owner.slice(2)}000000000000000000000000000000000000000000000000000000000000000001`)
+        .join("")
+      console.log({signatures})
+      const ethTxHash = await execute("eth_sendTransaction", [{
+        to: safeAddress,
+        data: safeInterface.encodeFunctionData("execTransaction", [
+          transaction.to,
+          transaction.value,
+          transaction.data,
+          transaction.operation,
+          transaction.safeTxGas,
+          transaction.baseGas,
+          transaction.gasPrice,
+          transaction.gasToken,
+          transaction.refundReceiver,
+          signatures
+        ]),
+        from: safeInfo.owners[0],
+        gasPrice: 0,
+        gasLimit: 10000000
+      }])
+      console.log({ethTxHash})
+      const receipt = await execute("eth_getTransactionReceipt", [ethTxHash])
+      console.log({receipt})
     }
 
   } catch (error) {
