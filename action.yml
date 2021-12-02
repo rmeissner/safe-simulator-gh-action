@@ -1,0 +1,18 @@
+name: "Safe Transaction Checker"
+description: "GitHub Action to check Safe transaction state"
+author: "rmeissner"
+branding:
+  icon: "award"
+  color: blue
+inputs:
+  safe-address:
+    description: "Address of the Safe to monitor (e.g. 0x0Da0...5afe)"
+  service-url:
+    description: "Address of the Safe service"
+    default: "https://safe-transaction.gnosis.io/"
+  branch:
+    description: "provide a branch where to store the state"
+    default: "master"
+runs:
+  using: "node15"
+  main: "lib/main.js"
