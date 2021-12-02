@@ -7,9 +7,13 @@ branding:
 inputs:
   safe-address:
     description: "Address of the Safe to monitor (e.g. 0x0Da0...5afe)"
+  node-url:
+    description: "Node url"
   service-url:
     description: "Address of the Safe service"
     default: "https://safe-transaction.mainnet.gnosis.io/"
+  safe-tx-hash:
+    description: "Hash of Safe transaction to check"
   branch:
     description: "provide a branch where to store the state"
     default: "master"
