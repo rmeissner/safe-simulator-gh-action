@@ -30,7 +30,9 @@ const executor = (provider: Ganache.Provider) => {
   const execute = promisify(provider.send.bind(provider))
   return async (method: string, params: any[]): Promise<JsonRpcResponse | undefined> => {
       console.log("JSON RPC", method, params)
-      return (await execute({ jsonrpc: "2.0", method, params }))?.result
+      const response = await execute({ jsonrpc: "2.0", method, params })
+      console.log({response})
+      return response?.result
   }
 }
 
