@@ -22,6 +22,7 @@
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0",
+    "@gnosis.pm/safe-deployments": "^1.4.0",
     "@octokit/rest": "^16.0.0",
     "@vercel/ncc": "^0.32.0",
     "actions-toolkit": "^2.1.0",
