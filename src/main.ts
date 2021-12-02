@@ -42,11 +42,9 @@ const executor = (nodeUrl: string) => {
   const options: any = { db, db_path: "/", fork: nodeUrl, gasLimit: 100000000, gasPrice: "0" }
   const provider = Ganache.provider(options)
   const execute = promisify(provider.send.bind(provider))
-  return async (method: string, params: any[]): Promise<JsonRpcResponse | undefined> => {
-    console.log("JSON RPC", method, params)
+  return async (method: string, params: any[]): Promise<any | undefined> => {
     try {
       const response = await execute({ jsonrpc: "2.0", id: Math.random().toString(35), method, params })
-      console.log({ response })
       return response?.result
     } catch (e) {
       console.log(e)
@@ -101,7 +99,7 @@ async function run(): Promise<void> {
         .sort()
         .map((owner) => `000000000000000000000000${owner.slice(2)}000000000000000000000000000000000000000000000000000000000000000001`)
         .join("")
-      console.log({signatures})
+      core.debug("Signatures: " + signatures)
       const ethTxHash = await execute("eth_sendTransaction", [{
         to: safeAddress,
         data: safeInterface.encodeFunctionData("execTransaction", [
@@ -120,9 +118,9 @@ async function run(): Promise<void> {
         gasPrice: 0,
         gasLimit: 10000000
       }])
-      console.log({ethTxHash})
       const receipt = await execute("eth_getTransactionReceipt", [ethTxHash])
-      console.log({receipt})
+      core.debug("Transaction receipt: " + JSON.stringify(receipt))
+      console.log("Logs", receipt?.logs)
     }
 
   } catch (error) {
