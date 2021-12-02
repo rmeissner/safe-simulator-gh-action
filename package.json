@@ -27,6 +27,7 @@
     "@vercel/ncc": "^0.32.0",
     "actions-toolkit": "^2.1.0",
     "axios": "^0.24.0",
+    "ethers": "^5.5.2",
     "ganache-core": "^2.13.2",
     "husky": "^4.3.0",
     "lodash": "^4.17.21"

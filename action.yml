@@ -14,6 +14,12 @@ inputs:
     default: "https://safe-transaction.mainnet.gnosis.io/"
   safe-tx-hash:
     description: "Hash of Safe transaction to check"
+  fail-on-unknown-delegatecall:
+    description: "Check if an unknown delegatecall is used"
+    default: "true"
+  simulate-tx:
+    description: "Simulate transaction"
+    default: "true"
   branch:
     description: "provide a branch where to store the state"
     default: "master"
