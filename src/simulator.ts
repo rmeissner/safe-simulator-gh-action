@@ -6,7 +6,10 @@ import { MultisigTransaction, SafeInfo } from "./types"
 
 const safeInterface = new ethers.utils.Interface([
     "function approveHash(bytes32) returns (bytes32)",
-    "function execTransaction(address to, uint256 value, bytes calldata data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address payable refundReceiver, bytes calldata signatures) returns (bool)"
+    "function enableModule(address module)",
+    "function execTransactionFromModule(address to, uint256 value, bytes calldata data, uint8 operation) returns (bool)",
+    "function execTransaction(address to, uint256 value, bytes calldata data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address refundReceiver, bytes calldata signatures) returns (bool)",
+    "function getTransactionHash(address to, uint256 value, bytes calldata data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address refundReceiver, uint256 _nonce) returns (bytes32)"
 ])
 
 interface RpcProvider {
@@ -58,14 +61,33 @@ export class Simulator {
         this.logger = logger
     }
 
+    private async getHashForCurrentNonce(safeInfo: SafeInfo, transaction: MultisigTransaction) {
+        return await this.provider.send("eth_call", [{
+            to: safeInfo.address,
+            data: safeInterface.encodeFunctionData("getTransactionHash", [
+                transaction.to,
+                transaction.value,
+                transaction.data,
+                transaction.operation,
+                transaction.safeTxGas,
+                transaction.baseGas,
+                transaction.gasPrice,
+                transaction.gasToken,
+                transaction.refundReceiver,
+                safeInfo.nonce
+            ])
+        }, "latest"])
+    }
+
     async simulateSafeTransaction(safeInfo: SafeInfo, transaction: MultisigTransaction) {
         this.logger?.("Client", await this.provider.send("web3_clientVersion", []))
+        const approveHash = safeInfo.nonce === transaction.nonce ? transaction.safeTxHash : await this.getHashForCurrentNonce(safeInfo, transaction)
         for (const owner of safeInfo.owners) {
             this.logger?.("Prepare", owner)
             await this.provider.send("evm_unlockUnknownAccount", [owner])
             await this.provider.send("eth_sendTransaction", [{
                 to: safeInfo.address,
-                data: safeInterface.encodeFunctionData("approveHash", [transaction.safeTxHash]),
+                data: safeInterface.encodeFunctionData("approveHash", [approveHash]),
                 from: owner,
                 gasPrice: 0,
                 gasLimit: 10000000

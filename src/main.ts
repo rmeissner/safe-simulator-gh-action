@@ -36,7 +36,7 @@ async function run(): Promise<void> {
       core.warning("Transaction performs a delegate call")
     }
     const simulateTx: string = core.getInput('simulate-tx')
-    if (simulateTx === "true" && safeInfo.nonce === transaction.nonce) {
+    if (simulateTx === "true") {
       console.log("Simulate Transaction")
       const simulator = new Simulator(nodeUrl, console.log)
       await simulator.simulateSafeTransaction(safeInfo, transaction)

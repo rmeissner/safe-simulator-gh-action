@@ -46,7 +46,7 @@
     "typescript": "^3.8.3"
   },
   "author": "rmeissner",
-  "license": "GPL-3.0",
+  "license": "GPL-3.0-only",
   "bugs": {
     "url": "https://github.com/rmeissner/safe-tx-gh-action/issues"
   },
