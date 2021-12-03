@@ -5,7 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "jest",
-    "build": "rimraf lib dist && tsc && ncc build dist/main.js -o lib --source-map --license licenses.txt"
+    "build": "rimraf lib dist && tsc && ncc build dist/main.js -o lib --source-map --license licenses.txt",
+    "example": "ts-node examples/simulation.ts"
   },
   "husky": {
     "hooks": {}
@@ -38,12 +39,14 @@
     "@types/memdown": "^3.0.0",
     "@types/node": "^16.11.11",
     "@types/util.promisify": "^1.0.4",
+    "dotenv": "^10.0.0",
     "rimraf": "^3.0.2",
     "ts-jest": "^24.2.0",
+    "ts-node": "^10.4.0",
     "typescript": "^3.8.3"
   },
-  "author": "ibakshay",
-  "license": "Apache-2.0",
+  "author": "rmeissner",
+  "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/rmeissner/safe-tx-gh-action/issues"
   },
