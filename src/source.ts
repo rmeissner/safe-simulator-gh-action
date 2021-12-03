@@ -31,6 +31,7 @@ export class TargetLoader {
 
     private async loadMultiSigTransaction(safeTxHash: string): Promise<SafeTransaction> {
         const txResponse: AxiosResponse<MultisigTransaction> = await axios.get(`${this.serviceUrl}/api/v1/multisig-transactions/${safeTxHash}`)
+        txResponse.data.type = "multisig"
         return txResponse.data
     }
 
