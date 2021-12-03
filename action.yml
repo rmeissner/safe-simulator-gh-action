@@ -12,8 +12,11 @@ inputs:
   service-url:
     description: "Address of the Safe service"
     default: "https://safe-transaction.mainnet.gnosis.io/"
-  safe-tx-hash:
-    description: "Hash of Safe transaction to check"
+  ipfs-url:
+    description: "Address of the IPFS gateway"
+    default: "https://cloudflare-ipfs.com/"
+  check-target:
+    description: "<type>/<id> of the target (e.g. multisig/<safetxhash> or safesnap/<snapshot_ipfs>)"
   fail-on-unknown-delegatecall:
     description: "Check if an unknown delegatecall is used"
     default: "true"

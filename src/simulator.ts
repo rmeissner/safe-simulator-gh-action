@@ -2,7 +2,7 @@ import { ethers } from "ethers"
 import Ganache, { JsonRpcPayload, JsonRpcResponse } from "ganache-core"
 import promisify from "util.promisify"
 import { LoggingDb } from "./db"
-import { MultisigTransaction, SafeInfo } from "./types"
+import { MetaTransaction, ModuleTransaction, MultisigTransaction, SafeInfo } from "./types"
 
 const safeInterface = new ethers.utils.Interface([
     "function approveHash(bytes32) returns (bytes32)",
@@ -79,7 +79,23 @@ export class Simulator {
         }, "latest"])
     }
 
-    async simulateSafeTransaction(safeInfo: SafeInfo, transaction: MultisigTransaction) {
+    private async evaluateChanges(txHash: string) {
+        const touched = this.provider.getTouched()
+        const blockNumber = ethers.BigNumber.from(await this.provider.send("eth_blockNumber", []))
+        for (const value of touched) {
+            const parts = value.replace("!trie_db!!touched!", "").split(";")
+            if (parts.length != 2) continue
+            const storageBefore = await this.provider.send("eth_getStorageAt", [parts[0], parts[1], blockNumber.sub(1).toHexString()])
+            const storageAfter = await this.provider.send("eth_getStorageAt", [parts[0], parts[1], blockNumber.toHexString()])
+            if (storageBefore !== storageAfter)
+                this.logger?.("Storage of", parts[0], "at", parts[1], "changed from", storageBefore, "to", storageAfter)
+        }
+        const receipt = await this.provider.send("eth_getTransactionReceipt", [txHash])
+        this.logger?.("Logs", receipt?.logs)
+    }
+
+    async simulateMultiSigTransaction(safeInfo: SafeInfo, transaction: MultisigTransaction) {
+        this.logger?.("Simulate Multisig Transaction")
         this.logger?.("Client", await this.provider.send("web3_clientVersion", []))
         const approveHash = safeInfo.nonce === transaction.nonce ? transaction.safeTxHash : await this.getHashForCurrentNonce(safeInfo, transaction)
         for (const owner of safeInfo.owners) {
@@ -119,18 +135,29 @@ export class Simulator {
             gasPrice: 0,
             gasLimit: 10000000
         }])
-        const touched = this.provider.getTouched()
-        const blockNumber = ethers.BigNumber.from(await this.provider.send("eth_blockNumber", []))
-        for (const value of touched) {
-            const parts = value.replace("!trie_db!!touched!", "").split(";")
-            if (parts.length != 2) continue
-            const storageBefore = await this.provider.send("eth_getStorageAt", [parts[0], parts[1], blockNumber.sub(1).toHexString()])
-            const storageAfter = await this.provider.send("eth_getStorageAt", [parts[0], parts[1], blockNumber.toHexString()])
-            if (storageBefore !== storageAfter)
-                this.logger?.("Storage of", parts[0], "at", parts[1], "changed from", storageBefore, "to", storageAfter)
-        }
         this.provider.setDbLogging(false)
-        const receipt = await this.provider.send("eth_getTransactionReceipt", [ethTxHash])
-        this.logger?.("Logs", receipt?.logs)
+        await this.evaluateChanges(ethTxHash)
+    }
+
+    async simulateModuleTransaction(safeInfo: SafeInfo, transaction: ModuleTransaction) {
+        this.logger?.("Simulate Module Transaction")
+        this.logger?.("Client", await this.provider.send("web3_clientVersion", []))
+        await this.provider.send("evm_unlockUnknownAccount", [transaction.module])
+        this.provider.setDbLogging(true)
+        this.provider.clearTouched()
+        const ethTxHash = await this.provider.send("eth_sendTransaction", [{
+            to: safeInfo.address,
+            data: safeInterface.encodeFunctionData("execTransactionFromModule", [
+                transaction.to,
+                transaction.value,
+                transaction.data,
+                transaction.operation
+            ]),
+            from: transaction.module,
+            gasPrice: 0,
+            gasLimit: 10000000
+        }])
+        this.provider.setDbLogging(false)
+        await this.evaluateChanges(ethTxHash)
     }
 }
