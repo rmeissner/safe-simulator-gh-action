@@ -1,5 +1,5 @@
 {
-  "name": "safe-tx-gh-action",
+  "name": "safe-simulator-gh-action",
   "version": "0.1.0",
   "description": "GitHub Action to check Safe transaction state",
   "main": "lib/index.js",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rmeissner/safe-tx-gh-action.git"
+    "url": "git+https://github.com/rmeissner/safe-simulator-gh-action.git"
   },
   "keywords": [
     "actions",
@@ -48,7 +48,7 @@
   "author": "rmeissner",
   "license": "GPL-3.0-only",
   "bugs": {
-    "url": "https://github.com/rmeissner/safe-tx-gh-action/issues"
+    "url": "https://github.com/rmeissner/safe-simulator-gh-action/issues"
   },
-  "homepage": "https://github.com/rmeissner/safe-tx-gh-action#readme"
+  "homepage": "https://github.com/rmeissner/safe-simulator-gh-action#readme"
 }
