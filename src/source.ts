@@ -3,6 +3,8 @@ import axios, { AxiosResponse } from 'axios'
 import { ethers } from "ethers";
 import { pack } from '@ethersproject/solidity';
 import { hexDataLength, isHexString } from '@ethersproject/bytes';
+import { context, getOctokit } from "@actions/github";
+import { toolkit } from "./config";
 
 const multisendInterface = new ethers.utils.Interface(['function multiSend(bytes memory transactions)'])
 const MULTISEND_CONTRACT_ADDRESS = '0x8D29bE29923b68abfDD21e541b9374737B49cdAD'
@@ -27,12 +29,16 @@ const removeHexPrefix = (hexString: string) => {
 
 export class TargetLoader {
 
-    constructor(private serviceUrl: string, private ipfsUrl: string) { }
-
-    private async loadMultiSigTransaction(safeTxHash: string): Promise<SafeTransaction> {
-        const txResponse: AxiosResponse<MultisigTransaction> = await axios.get(`${this.serviceUrl}/api/v1/multisig-transactions/${safeTxHash}`)
-        txResponse.data.type = "multisig"
-        return txResponse.data
+    private async loadFileContent(path: string): Promise<string> {
+        const file = await toolkit.repos.getContent({
+            accept: 'application/vnd.github.v3+json',
+            ...context.repo,
+            path: path,
+            ref: context.ref
+        })
+        const content = file.data['content']
+        if (!content || typeof content !== "string") throw Error(`File "${path}" not found`)
+        return Buffer.from(content, 'base64').toString()
     }
 
     private buildModuleTx(module: string, subTxs: any): ModuleTransaction {
@@ -66,9 +72,10 @@ export class TargetLoader {
     }
 
     private async loadSafeSnapTransactions(ipfsHash: string): Promise<ModuleTransaction[]> {
-        const proposalResponse: AxiosResponse<any> = await axios.get(`${this.ipfsUrl}/ipfs/${ipfsHash}`)
-        if (!proposalResponse.data.data.message.plugins) throw Error("Invalid proposal")
-        const pluginData = JSON.parse(proposalResponse.data.data.message.plugins)
+        const proposalContent = await this.loadFileContent(`proposal/${ipfsHash}/details.json`)
+        const proposal = JSON.parse(proposalContent)
+        if (!proposal.data.message.plugins) throw Error("Invalid proposal")
+        const pluginData = JSON.parse(proposal.data.message.plugins)
         if (!pluginData.safeSnap) throw Error("No SafeSnap found")
         if (!pluginData.safeSnap.safes) throw Error("No Safe in SafeSnap found")
         if (!Array.isArray(pluginData.safeSnap.safes) || pluginData.safeSnap.safes.length != 1) throw Error("Unsupported Safes")
@@ -80,6 +87,20 @@ export class TargetLoader {
         })
     }
 
+    private async loadMultiSigTransaction(safeTxHash: string): Promise<SafeTransaction> {
+        const txContent = await this.loadFileContent(`mutlisig/${safeTxHash}/details.json`)
+        const tx = JSON.parse(txContent)
+        tx.type = "multisig"
+        return tx
+    }
+
+    private async loadModuleTransaction(id: string): Promise<SafeTransaction> {
+        const txContent = await this.loadFileContent(`module/${id}/details.json`)
+        const tx = JSON.parse(txContent)
+        tx.type = "module"
+        return tx
+    }
+
     async loadTarget(target: string): Promise<SafeTransaction[]> {
         const targetParts = target.split("/")
         if (targetParts.length < 2) throw Error("Invalid target")
@@ -88,6 +109,8 @@ export class TargetLoader {
                 return [await this.loadMultiSigTransaction(targetParts[1])]
             case "safesnap":
                 return await this.loadSafeSnapTransactions(targetParts[1])
+            case "module":
+                return [await this.loadModuleTransaction(targetParts[1])]
             default:
                 throw Error("Invalid target")
         }

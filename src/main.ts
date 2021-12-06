@@ -15,14 +15,13 @@ async function run(): Promise<void> {
   try {
     const safeAddress: string = core.getInput('safe-address')
     const serviceUrl: string = core.getInput('service-url')
-    const ipfsUrl: string = core.getInput('ipfs-url')
     const nodeUrl: string = core.getInput('node-url')
-    const loader = new TargetLoader(serviceUrl, ipfsUrl)
 
     const infoResponse: AxiosResponse<SafeInfo> = await axios.get(`${serviceUrl}/api/v1/safes/${safeAddress}`)
     const safeInfo = infoResponse.data
     console.log("Safe Information", safeInfo)
 
+    const loader = new TargetLoader()
     const checkTarget: string = core.getInput('check-target')
     const transactions: SafeTransaction[] = await loader.loadTarget(checkTarget)
     for (const transaction of transactions) {
