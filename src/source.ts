@@ -72,7 +72,7 @@ export class TargetLoader {
     }
 
     private async loadSafeSnapTransactions(ipfsHash: string): Promise<ModuleTransaction[]> {
-        const proposalContent = await this.loadFileContent(`proposal/${ipfsHash}/details.json`)
+        const proposalContent = await this.loadFileContent(`safesnap/${ipfsHash}/details.json`)
         const proposal = JSON.parse(proposalContent)
         if (!proposal.data.message.plugins) throw Error("Invalid proposal")
         const pluginData = JSON.parse(proposal.data.message.plugins)
@@ -94,7 +94,7 @@ export class TargetLoader {
         return tx
     }
 
-    private async loadModuleTransaction(id: string): Promise<SafeTransaction> {
+    private async loadModuleTransaction(id: string): Promise<ModuleTransaction> {
         const txContent = await this.loadFileContent(`module/${id}/details.json`)
         const tx = JSON.parse(txContent)
         tx.type = "module"

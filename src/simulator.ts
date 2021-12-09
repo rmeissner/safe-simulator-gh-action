@@ -5,6 +5,8 @@ import { LoggingDb } from "./db"
 import { MetaTransaction, ModuleTransaction, MultisigTransaction, SafeInfo } from "./types"
 
 const safeInterface = new ethers.utils.Interface([
+    "function nonce() returns (uint256)",
+    "function getOwners() returns (uint256)",
     "function approveHash(bytes32) returns (bytes32)",
     "function enableModule(address module)",
     "function execTransactionFromModule(address to, uint256 value, bytes calldata data, uint8 operation) returns (bool)",
