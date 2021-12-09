@@ -33,7 +33,9 @@ export class TargetLoader {
         console.log("Load", path)
         console.log({context})
         const file = await toolkit.repos.getContent({
-            accept: 'application/vnd.github.v3+json',
+            mediaType: {
+                format: "raw"
+            },
             ...context.repo,
             path: path,
             ref: context.ref
