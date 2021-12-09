@@ -30,12 +30,14 @@ const removeHexPrefix = (hexString: string) => {
 export class TargetLoader {
 
     private async loadFileContent(path: string): Promise<string> {
+        console.log("Load", path)
         const file = await toolkit.repos.getContent({
             accept: 'application/vnd.github.v3+json',
             ...context.repo,
             path: path,
             ref: context.ref
         })
+        console.log({file})
         const content = file.data['content']
         if (!content || typeof content !== "string") throw Error(`File "${path}" not found`)
         return Buffer.from(content, 'base64').toString()
