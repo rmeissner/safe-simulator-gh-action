@@ -31,7 +31,9 @@ export class TargetLoader {
 
     private async loadFileContent(path: string): Promise<string> {
         console.log("Load", path)
+        console.log({context})
         const file = await toolkit.repos.getContent({
+            accept: 'application/vnd.github.v3+json',
             ...context.repo,
             path: path,
             ref: context.ref
