@@ -30,8 +30,6 @@ const removeHexPrefix = (hexString: string) => {
 export class TargetLoader {
 
     private async loadFileContent(path: string): Promise<string> {
-        console.log("Load", path)
-        console.log({context})
         const file = await toolkit.repos.getContent({
             mediaType: {
                 format: "raw"
@@ -40,7 +38,6 @@ export class TargetLoader {
             path: path,
             ref: context.ref
         })
-        console.log({file})
         const content = file.data['content']
         if (!content || typeof content !== "string") throw Error(`File "${path}" not found`)
         return Buffer.from(content, 'base64').toString()
@@ -93,7 +90,7 @@ export class TargetLoader {
     }
 
     private async loadMultiSigTransaction(safeTxHash: string): Promise<SafeTransaction> {
-        const txContent = await this.loadFileContent(`mutlisig/${safeTxHash}/details.json`)
+        const txContent = await this.loadFileContent(`multisig/${safeTxHash}/details.json`)
         const tx = JSON.parse(txContent)
         tx.type = "multisig"
         return tx
