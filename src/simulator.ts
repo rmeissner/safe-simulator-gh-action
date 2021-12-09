@@ -124,7 +124,7 @@ export class Simulator {
             data: safeInterface.encodeFunctionData("execTransaction", [
                 transaction.to,
                 transaction.value,
-                transaction.data,
+                transaction.data || "0x",
                 transaction.operation,
                 transaction.safeTxGas,
                 transaction.baseGas,
