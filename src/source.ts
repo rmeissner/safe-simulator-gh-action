@@ -40,7 +40,7 @@ export class TargetLoader {
         })
         const content = file.data
         if (!content || typeof content !== "string") throw Error(`File "${path}" not found`)
-        return Buffer.from(content, 'base64').toString()
+        return content
     }
 
     private buildModuleTx(module: string, subTxs: any): ModuleTransaction {
