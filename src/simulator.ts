@@ -61,7 +61,7 @@ export class Simulator {
             data: safeInterface.encodeFunctionData("getTransactionHash", [
                 transaction.to,
                 transaction.value,
-                transaction.data,
+                transaction.data || "0x",
                 transaction.operation,
                 transaction.safeTxGas,
                 transaction.baseGas,
@@ -184,7 +184,7 @@ export class Simulator {
             data: safeInterface.encodeFunctionData("execTransactionFromModule", [
                 transaction.to,
                 transaction.value,
-                transaction.data,
+                transaction.data || "0x",
                 transaction.operation
             ]),
             from: module,
