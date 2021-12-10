@@ -17,6 +17,11 @@ export class SafeInfoProvider {
             modules = modulePage[0]
         } catch (error) {
             console.error(error)
+            try {
+                modules = await safe.getModules()
+            } catch (error) {
+                console.error(error)
+            }
         }
         return {
             address: ethers.utils.getAddress(safeAddress),

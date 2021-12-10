@@ -4,6 +4,7 @@ import { getMultiSendDeployment, getMultiSendCallOnlyDeployment, getCreateCallDe
 export const safeInterface = new ethers.utils.Interface([
     "function nonce() view returns (uint256)",
     "function getOwners() view returns (address[])",
+    "function getModules() view returns (address[])",
     "function getModulesPaginated(address,uint256) view returns (address[],address)",
     "function approveHash(bytes32) returns (bytes32)",
     "function enableModule(address module)",
