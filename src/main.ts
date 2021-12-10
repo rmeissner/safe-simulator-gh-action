@@ -7,6 +7,7 @@ import { Check, CheckResult, Target } from "./types"
 
 async function run(): Promise<void> {
   try {
+    const verbose: boolean = core.getInput('verbose') === 'true'
     const nodeUrl: string = core.getInput('node-url')
     const loader = new TargetLoader()
     const checkTarget: string = core.getInput('check-target')
@@ -21,7 +22,7 @@ async function run(): Promise<void> {
 
     const checks: Check[] = []
     checks.push(new StaticCheck())
-    if(core.getInput('simulate-tx') === 'true') checks.push(new SimulateCheck(nodeUrl))
+    if(core.getInput('simulate-tx') === 'true') checks.push(new SimulateCheck(nodeUrl, verbose))
   
     const checkResults: CheckResult[] = []
     for (const check of checks) {
