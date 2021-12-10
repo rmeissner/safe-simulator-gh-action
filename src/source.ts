@@ -1,5 +1,4 @@
-import { ModuleTransaction, MultisigTransaction, SafeTransaction } from "./types"
-import axios, { AxiosResponse } from 'axios'
+import { MetaTransaction, ModuleTarget, MultisigTarget, Target } from "./types"
 import { ethers } from "ethers";
 import { pack } from '@ethersproject/solidity';
 import { hexDataLength, isHexString } from '@ethersproject/bytes';
@@ -9,7 +8,7 @@ import { toolkit } from "./config";
 const multisendInterface = new ethers.utils.Interface(['function multiSend(bytes memory transactions)'])
 const MULTISEND_CONTRACT_ADDRESS = '0x8D29bE29923b68abfDD21e541b9374737B49cdAD'
 
-const encodePackageMultiSendTransaction = (transaction: ModuleTransaction) => {
+const encodePackageMultiSendTransaction = (transaction: MetaTransaction) => {
     const data = transaction.data || '0x';
     return pack(
         ['uint8', 'address', 'uint256', 'uint256', 'bytes'],
@@ -43,10 +42,8 @@ export class TargetLoader {
         return content
     }
 
-    private buildModuleTx(module: string, subTxs: any): ModuleTransaction {
+    private buildModuleTx(subTxs: any): MetaTransaction {
         if (!Array.isArray(subTxs)) return {
-            type: "module",
-            module,
             to: subTxs.to,
             value: subTxs.value,
             data: subTxs.data,
@@ -64,8 +61,6 @@ export class TargetLoader {
         ]);
 
         return {
-            type: "module",
-            module,
             to: MULTISEND_CONTRACT_ADDRESS,
             operation: 1,
             value: "0",
@@ -73,9 +68,11 @@ export class TargetLoader {
         };
     }
 
-    private async loadSafeSnapTransactions(ipfsHash: string): Promise<ModuleTransaction[]> {
-        const proposalContent = await this.loadFileContent(`safesnap/${ipfsHash}/details.json`)
-        const proposal = JSON.parse(proposalContent)
+    private async loadSafeSnapTransactions(ipfsHash: string): Promise<ModuleTarget> {
+        const detailsContent = await this.loadFileContent(`safesnap/${ipfsHash}/details.json`)
+        const details = JSON.parse(detailsContent)
+        const space = details.space
+        const proposal = details.proposal
         if (!proposal.data.message.plugins) throw Error("Invalid proposal")
         const pluginData = JSON.parse(proposal.data.message.plugins)
         if (!pluginData.safeSnap) throw Error("No SafeSnap found")
@@ -84,35 +81,50 @@ export class TargetLoader {
         const safesnapData = pluginData.safeSnap.safes[0]
         if (!safesnapData.realityAddress) throw Error("Invalid SafeSnap realityAddress")
         if (!Array.isArray(safesnapData.txs)) throw Error("Invalid SafeSnap transactions")
-        return safesnapData.txs.map((tx: any) => {
-            return this.buildModuleTx(safesnapData.realityAddress, tx)
-        })
+        return {
+            type: "module",
+            safe: space.safe,
+            module: safesnapData.realityAddress,
+            context: {
+                type: "safesnap"
+            },
+            txs: safesnapData.txs.map((tx: any) => {
+                return this.buildModuleTx(tx)
+            })
+        }
     }
 
-    private async loadMultiSigTransaction(safeTxHash: string): Promise<SafeTransaction> {
-        const txContent = await this.loadFileContent(`multisig/${safeTxHash}/details.json`)
-        const tx = JSON.parse(txContent)
-        tx.type = "multisig"
-        return tx
+    private async loadMultiSigTransaction(safeTxHash: string): Promise<MultisigTarget> {
+        const detailsContent = await this.loadFileContent(`multisig/${safeTxHash}/details.json`)
+        const details = JSON.parse(detailsContent)
+        return {
+            type: "multisig",
+            safe: details.safe,
+            tx: details.tx
+        }
     }
 
-    private async loadModuleTransaction(id: string): Promise<ModuleTransaction> {
-        const txContent = await this.loadFileContent(`module/${id}/details.json`)
-        const tx = JSON.parse(txContent)
-        tx.type = "module"
-        return tx
+    private async loadModuleTransaction(id: string): Promise<ModuleTarget> {
+        const detailsContent = await this.loadFileContent(`module/${id}/details.json`)
+        const details = JSON.parse(detailsContent)
+        return {
+            type: "module",
+            safe: details.safe,
+            module: details.module,
+            txs: details.txs
+        }
     }
 
-    async loadTarget(target: string): Promise<SafeTransaction[]> {
+    async loadTarget(target: string): Promise<Target> {
         const targetParts = target.split("/")
         if (targetParts.length < 2) throw Error("Invalid target")
         switch (targetParts[0]) {
             case "multisig":
-                return [await this.loadMultiSigTransaction(targetParts[1])]
+                return await this.loadMultiSigTransaction(targetParts[1])
             case "safesnap":
                 return await this.loadSafeSnapTransactions(targetParts[1])
             case "module":
-                return [await this.loadModuleTransaction(targetParts[1])]
+                return await this.loadModuleTransaction(targetParts[1])
             default:
                 throw Error("Invalid target")
         }

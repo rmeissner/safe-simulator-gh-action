@@ -1,3 +1,19 @@
+export interface CheckResult {
+    id: CheckId
+    data?: CheckData
+}
+
+export interface CheckData {
+    group: string
+    messages: any
+}
+
+export type CheckId = "info" | "unknown_delegatecall" | "target_self" | "delegatecall" | "change_safe_storage"
+
+export interface Check {
+    perform(info: SafeInfo, target: Target): Promise<CheckResult[]>
+}
+
 export interface MetaTransaction {
     to: string,
     value: string,
@@ -5,13 +21,7 @@ export interface MetaTransaction {
     operation: number,
 }
 
-export interface ModuleTransaction extends MetaTransaction {
-    type: "module",
-    module: string
-}
-
 export interface MultisigTransaction extends MetaTransaction {
-    type: "multisig",
     safeTxGas: string,
     baseGas: string,
     gasPrice: string,
@@ -21,7 +31,27 @@ export interface MultisigTransaction extends MetaTransaction {
     safeTxHash: string
 }
 
-export type SafeTransaction = ModuleTransaction | MultisigTransaction
+export interface SafeSnapContext {
+    type: "safesnap"
+}
+
+export type ModuleContext = SafeSnapContext
+
+export interface ModuleTarget {
+    type: "module",
+    safe: string,
+    module: string,
+    context?: ModuleContext,
+    txs: MetaTransaction[]
+}
+
+export interface MultisigTarget {
+    type: "multisig",
+    safe: string,
+    tx: MultisigTransaction
+}
+
+export type Target = ModuleTarget | MultisigTarget
 
 export interface SafeInfo {
     address: string,

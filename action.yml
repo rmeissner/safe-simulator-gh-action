@@ -9,23 +9,20 @@ inputs:
     description: "Address of the Safe to monitor (e.g. 0x0Da0...5afe)"
   node-url:
     description: "Node url"
-  service-url:
-    description: "Address of the Safe service"
-    default: "https://safe-transaction.mainnet.gnosis.io/"
-  ipfs-url:
-    description: "Address of the IPFS gateway"
-    default: "https://cloudflare-ipfs.com/"
   check-target:
     description: "<type>/<id> of the target (e.g. multisig/<safetxhash> or safesnap/<snapshot_ipfs>)"
+  show-info:
+    description: "Show Safe, target and simulation info"
+    default: "true"
+  fail-on-safe-storage-changes:
+    description: "Fail if the Safe storage is changed"
+    default: "true"
   fail-on-unknown-delegatecall:
-    description: "Check if an unknown delegatecall is used"
+    description: "Fail if an unknown delegatecall is used"
     default: "true"
   simulate-tx:
     description: "Simulate transaction"
     default: "true"
-  branch:
-    description: "provide a branch where to store the state"
-    default: "master"
 runs:
   using: "node16"
   main: "lib/index.js"
