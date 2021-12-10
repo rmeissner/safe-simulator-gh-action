@@ -1,6 +1,8 @@
 import { ethers } from "ethers";
 import { getMultiSendDeployment, getMultiSendCallOnlyDeployment, getCreateCallDeployment, getSignMessageLibDeployment } from '@gnosis.pm/safe-deployments'
 
+export const AddressOne = "0x0000000000000000000000000000000000000001";
+
 export const safeInterface = new ethers.utils.Interface([
     "function nonce() view returns (uint256)",
     "function getOwners() view returns (address[])",
