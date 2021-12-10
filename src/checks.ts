@@ -36,8 +36,8 @@ export class SimulateCheck implements Check {
 
   private simulator: Simulator
 
-  constructor (nodeUrl: string) {
-    this.simulator = new Simulator(nodeUrl, console.debug)
+  constructor (nodeUrl: string, verbose?: boolean) {
+    this.simulator = new Simulator(nodeUrl, (verbose === true) ? console.debug : undefined)
   }
 
   async perform(safeInfo: SafeInfo, target: Target): Promise<CheckResult[]> {

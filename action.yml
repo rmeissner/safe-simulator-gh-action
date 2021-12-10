@@ -21,6 +21,9 @@ inputs:
   simulate-tx:
     description: "Simulate transaction"
     default: "true"
+  verbose:
+    description: "Use to perform verbose logging"
+    default: "false"
 runs:
   using: "node16"
   main: "lib/index.js"
