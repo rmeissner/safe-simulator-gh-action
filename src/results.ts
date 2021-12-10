@@ -31,8 +31,7 @@ export const evaluateResults = (results: CheckResult[]) => {
                 if (!infoData) break
                 if (currentGroup !== infoData.group && currentGroup !== undefined) core.endGroup()
                 if (currentGroup !== infoData.group && infoData.group !== undefined) core.startGroup(infoData.group)
-                for (const message of infoData.messages)
-                    core.info((typeof message === "string") ? message : JSON.stringify(message, null, 3))
+                core.info((typeof infoData.message === "string") ? infoData.message : JSON.stringify(infoData.message, null, 3))
                 break
             }
         }

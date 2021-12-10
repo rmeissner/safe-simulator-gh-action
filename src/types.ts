@@ -5,10 +5,10 @@ export interface CheckResult {
 
 export interface CheckData {
     group: string
-    messages: any
+    message: any
 }
 
-export type CheckId = "info" | "unknown_delegatecall" | "target_self" | "delegatecall" | "change_safe_storage"
+export type CheckId = "info" | "unknown_delegatecall" | "target_self" | "delegatecall" | "change_safe_storage" | "check_error"
 
 export interface Check {
     perform(info: SafeInfo, target: Target): Promise<CheckResult[]>
@@ -56,5 +56,6 @@ export type Target = ModuleTarget | MultisigTarget
 export interface SafeInfo {
     address: string,
     owners: string[],
+    modules: string[],
     nonce: number
 }

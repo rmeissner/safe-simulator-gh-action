@@ -41,15 +41,21 @@ export class SimulateCheck implements Check {
   }
 
   async perform(safeInfo: SafeInfo, target: Target): Promise<CheckResult[]> {
-    switch (target.type) {
-      case "multisig":
-        await this.simulator.simulateMultiSigTransaction(safeInfo, target.tx)
-        break;
-      case "module":
-        for (const transaction of target.txs)
-          await this.simulator.simulateModuleTransaction(safeInfo, target.module, transaction)
-        break;
+    const results: CheckResult[] = []
+    try {
+      switch (target.type) {
+        case "multisig":
+          await this.simulator.simulateMultiSigTransaction(safeInfo, target.tx, results)
+          break;
+        case "module":
+          for (const transaction of target.txs)
+            await this.simulator.simulateModuleTransaction(safeInfo, target.module, transaction, results)
+          break;
+      }
+    } catch (error) {
+      const errorMessage = (error instanceof Error) ? error.message : JSON.stringify(error)
+      results.push({id: "check_error", data: { group: "simulation_error", message: "Simulation failed with: " + errorMessage}})
     }
-    return []
+    return results
   }
 }

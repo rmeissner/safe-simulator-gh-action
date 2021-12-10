@@ -5,8 +5,6 @@ branding:
   icon: "award"
   color: blue
 inputs:
-  safe-address:
-    description: "Address of the Safe to monitor (e.g. 0x0Da0...5afe)"
   node-url:
     description: "Node url"
   check-target:

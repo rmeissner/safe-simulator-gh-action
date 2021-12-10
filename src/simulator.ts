@@ -85,7 +85,7 @@ export class Simulator {
                 const storageOwner = getAddress(parts[0])
                 const data = {
                     group: "state_changes",
-                    messages: `Storage of ${storageOwner} at ${parts[1]} changed from ${storageBefore} to ${storageAfter}`
+                    message: `Storage of ${storageOwner} at ${parts[1]} changed from ${storageBefore} to ${storageAfter}`
                 } 
                 if (storageOwner === safeAddress) {
                     results?.push({ id: "change_safe_storage", data })
@@ -104,7 +104,7 @@ export class Simulator {
         for(const log of logs) {
             const data = {
                 group: "logs",
-                messages: log
+                message: log
             }
             results?.push({ id: "info", data })
         }
