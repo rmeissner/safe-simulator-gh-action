@@ -26,6 +26,9 @@ export const evaluateResults = (results: CheckResult[]) => {
                 core.warning("Interaction targets the Safe itself")
                 break
             }
+            case "check_error": {
+                shouldFail = true
+            }
             case "info": {
                 const infoData = result.data
                 if (!infoData) break
