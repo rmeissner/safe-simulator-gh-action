@@ -73,7 +73,24 @@ export class Simulator {
         }, "latest"])
     }
 
-    private async evaluateChanges(safeAddress: string, results?: CheckResult[]) {
+    private async isNonceChange(storageSlot: string, storageBefore, storageAfter: string, usedNonce: number) {
+        if (usedNonce < 0) return false
+        // Nonce is stored at slot 5
+        if (storageSlot !== "0x0000000000000000000000000000000000000000000000000000000000000005") return false
+        const expectedOriginalNonce = ethers.BigNumber.from(storageAfter).toNumber()
+        if (expectedOriginalNonce != usedNonce) {
+            this.logger?.("Unexpected original nonce slot state (expected", usedNonce, "got", expectedOriginalNonce, ")")
+            return false
+        }
+        const expectedNewNonce = ethers.BigNumber.from(storageAfter).toNumber()
+        if (expectedNewNonce != (usedNonce + 1)) {
+            this.logger?.("Unexpected new nonce slot state (expected", (usedNonce + 1), "got", expectedNewNonce, ")")
+            return false
+        }
+        return true
+    }
+
+    private async evaluateChanges(safeAddress: string, usedNonce: number, results?: CheckResult[]) {
         const touched = this.provider.getTouched()
         const blockNumber = ethers.BigNumber.from(await this.provider.send("eth_blockNumber", []))
         for (const value of touched) {
@@ -87,7 +104,7 @@ export class Simulator {
                     group: "state_changes",
                     message: `Storage of ${storageOwner} at ${parts[1]} changed from ${storageBefore} to ${storageAfter}`
                 } 
-                if (storageOwner === safeAddress) {
+                if (storageOwner === safeAddress && !(await this.isNonceChange(parts[1], storageBefore, storageAfter, usedNonce))) {
                     results?.push({ id: "change_safe_storage", data })
                 } else {
                     results?.push({ id: "info", data })
@@ -152,7 +169,7 @@ export class Simulator {
             gasLimit: 10000000
         }])
         this.provider.setDbLogging(false)
-        await this.evaluateChanges(safeInfo.address, results)
+        await this.evaluateChanges(safeInfo.address, transaction.nonce, results)
         await this.evaluateLogs(ethTxHash, results)
     }
 
@@ -175,7 +192,7 @@ export class Simulator {
             gasLimit: 10000000
         }])
         this.provider.setDbLogging(false)
-        await this.evaluateChanges(safeInfo.address, results)
+        await this.evaluateChanges(safeInfo.address, -1, results)
         await this.evaluateLogs(ethTxHash, results)
     }
 }

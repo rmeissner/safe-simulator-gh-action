@@ -7,6 +7,10 @@ export const evaluateResults = (results: CheckResult[]) => {
     let shouldFail: boolean = false
     let currentGroup: string | undefined
     for (const result of results) {
+        // Handle grouping
+        if (currentGroup !== result.data?.group && currentGroup !== undefined) core.endGroup()
+        if (currentGroup !== result.data?.group && result.data?.group !== undefined) core.startGroup(result.data.group)
+        currentGroup = result.data?.group
         switch (result.id) {
             case "change_safe_storage": {
                 shouldFail = shouldFail || failOnSafeStorageChanges
@@ -30,11 +34,8 @@ export const evaluateResults = (results: CheckResult[]) => {
                 shouldFail = true
             }
             case "info": {
-                const infoData = result.data
-                if (!infoData) break
-                if (currentGroup !== infoData.group && currentGroup !== undefined) core.endGroup()
-                if (currentGroup !== infoData.group && infoData.group !== undefined) core.startGroup(infoData.group)
-                core.info((typeof infoData.message === "string") ? infoData.message : JSON.stringify(infoData.message, null, 3))
+                if (!result.data) break
+                core.info((typeof result.data.message === "string") ? result.data.message : JSON.stringify(result.data.message, null, 3))
                 break
             }
         }
