@@ -2,8 +2,8 @@ import { ethers } from "ethers";
 import { getMultiSendDeployment, getMultiSendCallOnlyDeployment, getCreateCallDeployment, getSignMessageLibDeployment } from '@gnosis.pm/safe-deployments'
 
 export const safeInterface = new ethers.utils.Interface([
-    "function nonce() returns (uint256)",
-    "function getOwners() returns (uint256)",
+    "function nonce() view returns (uint256)",
+    "function getOwners() view returns (address[])",
     "function approveHash(bytes32) returns (bytes32)",
     "function enableModule(address module)",
     "function execTransactionFromModule(address to, uint256 value, bytes calldata data, uint8 operation) returns (bool)",
