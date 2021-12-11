@@ -129,7 +129,7 @@ export class Simulator {
     async simulateMultiSigTransaction(safeInfo: SafeInfo, transaction: MultisigTransaction, results?: CheckResult[]) {
         this.logger?.("Simulate Multisig Transaction")
         this.logger?.("Client", await this.provider.send("web3_clientVersion", []))
-        const approveHash = safeInfo.nonce === transaction.nonce ? transaction.safeTxHash : await this.getHashForCurrentNonce(safeInfo, transaction)
+        const approveHash = await this.getHashForCurrentNonce(safeInfo, transaction)
         for (const owner of safeInfo.owners) {
             this.logger?.("Prepare", owner)
             await this.provider.send("evm_unlockUnknownAccount", [owner])
