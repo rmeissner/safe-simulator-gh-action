@@ -178,7 +178,7 @@ export class Simulator {
         await this.provider.send("evm_unlockUnknownAccount", [module])
         this.provider.setDbLogging(true)
         this.provider.clearTouched()
-        const ethTxHash = await this.provider.send("eth_sendTransaction", [{
+        const ethTx = {
             to: safeInfo.address,
             data: safeInterface.encodeFunctionData("execTransactionFromModule", [
                 transaction.to,
@@ -189,7 +189,9 @@ export class Simulator {
             from: module,
             gasPrice: 0,
             gasLimit: 10000000
-        }])
+        }
+        this.logger?.("Transaction", ethTx)
+        const ethTxHash = await this.provider.send("eth_sendTransaction", [ethTx])
         this.provider.setDbLogging(false)
         await this.evaluateChanges(safeInfo.address, -1, results)
         await this.evaluateLogs(ethTxHash, results)
