@@ -5,6 +5,7 @@ export const AddressOne = "0x0000000000000000000000000000000000000001";
 
 export const safeInterface = new ethers.utils.Interface([
     "function nonce() view returns (uint256)",
+    "function getChainId() view returns (uint256)",
     "function getOwners() view returns (address[])",
     "function getModules() view returns (address[])",
     "function getModulesPaginated(address,uint256) view returns (address[],address)",
