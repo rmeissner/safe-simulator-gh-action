@@ -49,6 +49,15 @@ export class TargetLoader {
             data: subTxs.data,
             operation: subTxs.operation
         }
+        if (subTxs.length === 1) {
+            const subTx = subTxs[0]
+            return {
+                to: subTx.to,
+                value: subTx.value,
+                data: subTx.data,
+                operation: subTx.operation
+            }
+        }
         const transactionsEncoded =
             '0x' +
             subTxs
@@ -65,6 +74,15 @@ export class TargetLoader {
             value: "0",
             data
         };
+    }
+
+    private getNonce(subTxs: any, fallback: number): number {
+        if (!Array.isArray(subTxs)) return subTxs.nonce
+        if (subTxs.length === 1) {
+            const subTx = subTxs[0]
+            return subTx.nonce
+        }
+        return fallback
     }
 
     private async loadSafeSnapTransactions(ipfsHash: string): Promise<ModuleTarget> {
@@ -86,7 +104,9 @@ export class TargetLoader {
             module: safesnapData.realityAddress,
             context: {
                 type: "safesnap",
-                nonces: []
+                nonces: safesnapData.txs.map((tx: any, index: number) => {
+                    return this.getNonce(tx, index)
+                })
             },
             txs: safesnapData.txs.map((tx: any) => {
                 return this.buildModuleTx(tx)

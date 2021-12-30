@@ -39,7 +39,7 @@ export class SafeSnapCheck implements Check {
       return []
 
     const results: CheckResult[] = []
-    const hashes = await calculateProposalHash(target.module, safeInfo.chainId, target.txs)
+    const hashes = await calculateProposalHash(target.module, safeInfo.chainId, target.txs, target.context.nonces)
     results.push({ id: "info", data: { group: "safesnap", message: `Proposal hash: ${hashes.proposalHash}` } })
     results.push({ id: "info", data: { group: "safesnap", message: `Transaction hashes: ${hashes.txsHashes.join(", ")}` } })
     return results
