@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import { SimulateCheck, StaticCheck } from './checks'
+import { SafeSnapCheck, SimulateCheck, StaticCheck } from './checks'
 import { SafeInfoProvider } from './info'
 import { evaluateResults } from './results'
 import { TargetLoader } from './source'
@@ -22,6 +22,7 @@ async function run(): Promise<void> {
 
     const checks: Check[] = []
     checks.push(new StaticCheck())
+    checks.push(new SafeSnapCheck())
     if(core.getInput('simulate-tx') === 'true') checks.push(new SimulateCheck(nodeUrl, verbose))
   
     const checkResults: CheckResult[] = []
