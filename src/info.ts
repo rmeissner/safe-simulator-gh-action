@@ -27,7 +27,8 @@ export class SafeInfoProvider {
             address: ethers.utils.getAddress(safeAddress),
             owners: await safe.getOwners(),
             modules,
-            nonce: (await safe.nonce()).toNumber()
+            nonce: (await safe.nonce()).toNumber(),
+            chainId: await safe.getChainId()
         }
     }
 }

@@ -55,7 +55,6 @@ export class TargetLoader {
                 .map(encodePackageMultiSendTransaction)
                 .map(removeHexPrefix)
                 .join('');
-        const value: string = '0';
         const data = multisendInterface.encodeFunctionData('multiSend', [
             transactionsEncoded
         ]);
@@ -86,7 +85,8 @@ export class TargetLoader {
             safe: space.safe,
             module: safesnapData.realityAddress,
             context: {
-                type: "safesnap"
+                type: "safesnap",
+                nonces: []
             },
             txs: safesnapData.txs.map((tx: any) => {
                 return this.buildModuleTx(tx)

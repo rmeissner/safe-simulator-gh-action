@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import { validDelegateCallTargets } from './contracts'
+import { calculateProposalHash } from './safesnap/hashing'
 import { Simulator } from './simulator'
 import { Check, CheckResult, MetaTransaction, SafeInfo, Target } from "./types"
 
@@ -32,11 +33,24 @@ export class StaticCheck implements Check {
   }
 }
 
+export class SafeSnapCheck implements Check {
+  async perform(safeInfo: SafeInfo, target: Target): Promise<CheckResult[]> {
+    if (target.type !== "module" || target.context?.type !== "safesnap")
+      return []
+
+    const results: CheckResult[] = []
+    const hashes = await calculateProposalHash(target.module, safeInfo.chainId, target.txs)
+    results.push({ id: "info", data: { group: "safesnap", message: `Proposal hash: ${hashes.proposalHash}` } })
+    results.push({ id: "info", data: { group: "safesnap", message: `Transaction hashes: ${hashes.txsHashes.join(", ")}` } })
+    return results
+  }
+}
+
 export class SimulateCheck implements Check {
 
   private simulator: Simulator
 
-  constructor (nodeUrl: string, verbose?: boolean) {
+  constructor(nodeUrl: string, verbose?: boolean) {
     this.simulator = new Simulator(nodeUrl, (verbose === true) ? console.debug : undefined)
   }
 
@@ -54,7 +68,7 @@ export class SimulateCheck implements Check {
       }
     } catch (error) {
       const errorMessage = (error instanceof Error) ? error.message : JSON.stringify(error)
-      results.push({id: "check_error", data: { group: "simulation_error", message: "Simulation failed with: " + errorMessage}})
+      results.push({ id: "check_error", data: { group: "simulation_error", message: "Simulation failed with: " + errorMessage } })
     }
     return results
   }

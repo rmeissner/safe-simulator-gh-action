@@ -1,3 +1,5 @@
+import { BigNumberish } from "ethers"
+
 export interface CheckResult {
     id: CheckId
     data?: CheckData
@@ -32,7 +34,8 @@ export interface MultisigTransaction extends MetaTransaction {
 }
 
 export interface SafeSnapContext {
-    type: "safesnap"
+    type: "safesnap",
+    nonces: string[]
 }
 
 export type ModuleContext = SafeSnapContext
@@ -57,5 +60,6 @@ export interface SafeInfo {
     address: string,
     owners: string[],
     modules: string[],
-    nonce: number
+    nonce: number,
+    chainId: BigNumberish
 }
