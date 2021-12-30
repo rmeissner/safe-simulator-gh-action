@@ -23,12 +23,13 @@ export class SafeInfoProvider {
                 console.error(error)
             }
         }
+        const network = await this.provider.getNetwork()
         return {
             address: ethers.utils.getAddress(safeAddress),
             owners: await safe.getOwners(),
             modules,
             nonce: (await safe.nonce()).toNumber(),
-            chainId: await safe.getChainId()
+            chainId: network.chainId
         }
     }
 }
