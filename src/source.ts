@@ -104,11 +104,16 @@ export class TargetLoader {
             module: safesnapData.realityAddress,
             context: {
                 type: "safesnap",
+                proposalHash: safesnapData.hash,
                 nonces: safesnapData.txs.map((tx: any, index: number) => {
+                    if (!Array.isArray(tx) && tx.nonce)
+                        return tx.nonce
                     return this.getNonce(tx, index)
                 })
             },
             txs: safesnapData.txs.map((tx: any) => {
+                if (!Array.isArray(tx) && tx.transactions)
+                    return this.buildModuleTx(tx.transactions)
                 return this.buildModuleTx(tx)
             })
         }

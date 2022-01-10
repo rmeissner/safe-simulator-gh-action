@@ -42,6 +42,8 @@ export class SafeSnapCheck implements Check {
     const hashes = await calculateProposalHash(target.module, safeInfo.chainId, target.txs, target.context.nonces)
     results.push({ id: "info", data: { group: "safesnap", message: `Proposal hash: ${hashes.proposalHash}` } })
     results.push({ id: "info", data: { group: "safesnap", message: `Transaction hashes: ${hashes.txsHashes.join(", ")}` } })
+    if(target.context.proposalHash && target.context.proposalHash !== hashes.proposalHash) 
+      results.push({ id: "info", data: { group: "safesnap", message: `Calculated hash (${hashes.proposalHash}) is different to expected hash ${target.context.proposalHash}` } })
     return results
   }
 }

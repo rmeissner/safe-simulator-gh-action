@@ -35,6 +35,7 @@ export interface MultisigTransaction extends MetaTransaction {
 
 export interface SafeSnapContext {
     type: "safesnap",
+    proposalHash?: string, 
     nonces: string[]
 }
 
